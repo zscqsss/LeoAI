@@ -1,4 +1,4 @@
-# Changelog
+git remote set-url origin https://github.com/cha0upup/LeoAI.git# Changelog
 
 ## v1.0.0 (2026-06-12)
 
