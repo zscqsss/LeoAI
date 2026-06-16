@@ -1,25 +1,9 @@
-ARG BUILD_IMAGE=maven:3.9.9-eclipse-temurin-17
 ARG RUNTIME_IMAGE=eclipse-temurin:17-jre
 
-FROM ${BUILD_IMAGE} AS build
-
-WORKDIR /workspace
-COPY pom.xml ./
-COPY .mvn .mvn
-COPY mvnw ./
-COPY core/pom.xml core/pom.xml
-COPY dao/pom.xml dao/pom.xml
-COPY service/pom.xml service/pom.xml
-COPY ai/pom.xml ai/pom.xml
-COPY jmg/pom.xml jmg/pom.xml
-COPY web/pom.xml web/pom.xml
-COPY docker/maven-settings.xml /tmp/maven-settings.xml
-RUN mvn -B -s /tmp/maven-settings.xml -DskipTests dependency:go-offline
-
-COPY . .
-RUN mvn -B -s /tmp/maven-settings.xml -DskipTests package
-
 FROM ${RUNTIME_IMAGE}
+
+ARG JAR_URL=https://github.com/cha0upup/LeoAI/releases/download/V0.0.2/LeoAi-0.0.2-SNAPSHOT.jar
+ARG JAR_SHA256=1986285e3f0264416e533d3cca34ff05d7f29f12b2bf38ee4b61031049534dc3
 
 ENV TZ=Asia/Shanghai \
     JAVA_OPTS="" \
@@ -28,15 +12,21 @@ ENV TZ=Asia/Shanghai \
 
 WORKDIR /app/data
 
-COPY --from=build /workspace/web/target/LeoAi-*.jar /app/LeoAi.jar
 COPY root /app/root-seed
 COPY docker/entrypoint.sh /app/entrypoint.sh
 
-RUN chmod +x /app/entrypoint.sh \
-    && mkdir -p /app/data \
-    && groupadd --system leoai \
-    && useradd --system --gid leoai --home-dir /app/data leoai \
-    && chown -R leoai:leoai /app
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ca-certificates curl; \
+    curl -fsSL "$JAR_URL" -o /app/LeoAi.jar; \
+    echo "$JAR_SHA256  /app/LeoAi.jar" | sha256sum -c -; \
+    apt-get purge -y --auto-remove curl; \
+    rm -rf /var/lib/apt/lists/*; \
+    chmod +x /app/entrypoint.sh; \
+    mkdir -p /app/data; \
+    groupadd --system leoai; \
+    useradd --system --gid leoai --home-dir /app/data leoai; \
+    chown -R leoai:leoai /app
 
 USER leoai
 
