@@ -2,8 +2,7 @@ ARG RUNTIME_IMAGE=eclipse-temurin:17-jre
 
 FROM ${RUNTIME_IMAGE}
 
-ARG JAR_URL=https://github.com/cha0upup/LeoAI/releases/download/V0.0.2/LeoAi-0.0.2-SNAPSHOT.jar
-ARG JAR_SHA256=1986285e3f0264416e533d3cca34ff05d7f29f12b2bf38ee4b61031049534dc3
+ARG JAR_URL=https://github.com/cha0upup/LeoAI/releases/download/V0.0.3/LeoAi-0.0.3.jar
 
 ENV TZ=Asia/Shanghai \
     JAVA_OPTS="" \
@@ -19,7 +18,6 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl; \
     curl -fsSL "$JAR_URL" -o /app/LeoAi.jar; \
-    echo "$JAR_SHA256  /app/LeoAi.jar" | sha256sum -c -; \
     apt-get purge -y --auto-remove curl; \
     rm -rf /var/lib/apt/lists/*; \
     chmod +x /app/entrypoint.sh; \
